@@ -1,1 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commerce OS - Unified Platform</title>
+    
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons for a modern look -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Chart.js for vendor dashboard analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* Custom styles for a polished and modern UI */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F7F8FA; /* A lighter, cleaner background */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        /* Custom scrollbar for a refined look */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a5b4fc; }
+        
+        /* Active navigation link style */
+        .nav-link-active {
+            background-color: #4338CA; /* A deeper indigo for better contrast */
+            color: white;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .bottom-nav-link-active {
+            color: #4F46E5;
+        }
+        
+        /* General transition for interactive elements */
+        .transition-all { transition: all 0.2s ease-in-out; }
+
+        /* Toast Notification Styles */
+        .toast {
+            position: fixed;
+            bottom: 80px; /* Adjusted for bottom nav */
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 1050;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.success { background-color: #10B981; }
+        .toast.error { background-color: #EF4444; }
+
+        /* Availability Toggle Switch Styles */
+        .toggle-switch { position: relative; display: inline-block; width: 40px; height: 22px; }
+        .toggle-switch input { display: none; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #4F46E5; }
+        input:checked + .slider:before { transform: translateX(18px); }
+        
+        /* Enhanced Skeleton Loader */
+        @keyframes pulse { 50% { opacity: .6; } }
+        .skeleton { animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+        /* Order Tracking Timeline */
+        .timeline-item .timeline-marker {
+            position: absolute;
+            left: -8px;
+            top: 0;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        .timeline-item.completed .timeline-marker { background-color: #10B981; }
+        .timeline-item.active .timeline-marker { background-color: #3B82F6; }
+        .timeline-item.pending .timeline-marker { background-color: #D1D5DB; }
+    </style>
+</head>
+<body class="antialiased text-gray-800">
+
+    <!-- Main Application Container -->
+    <div id="app" class="min-h-screen">
+
+        <!-- Login Screen -->
+        <div id="auth-screen" class="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50">
+            <div class="w-full max-w-md p-8 space-y-8 bg-white/70 backdrop-blur-xl rounded-2xl shadow-2xl shadow-indigo-100 mx-4">
+                <div class="text-center">
+                    <i data-lucide="gem" class="w-16 h-16 mx-auto text-indigo-600"></i>
+                    <h2 class="mt-6 text-3xl font-extrabold text-gray-900">
+                        Welcome to Commerce OS
+                    </h2>
+                    <p class="mt-2 text-sm text-gray-600">
+                        The unified platform for Buyers and Vendors.
+                    </p>
+                </div>
+                <div class="flex flex-col space-y-4">
+                     <button onclick="login('buyer')" class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all transform hover:scale-105">
+                        <i data-lucide="shopping-cart" class="w-5 h-5 mr-2"></i>
+                        Login as Buyer
+                    </button>
+                    <button onclick="login('vendor')" class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-gray-700 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all transform hover:scale-105">
+                        <i data-lucide="briefcase" class="w-5 h-5 mr-2"></i>
+                        Login as Vendor
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Application Interface (Hidden by default) -->
+        <div id="main-app" class="hidden">
+            <!-- Sidebar Navigation (Desktop) -->
+            <aside id="sidebar" class="fixed top-0 left-0 z-40 w-64 h-screen transition-transform -translate-x-full sm:translate-x-0">
+                <div class="h-full px-4 py-6 overflow-y-auto bg-gray-800 text-white flex flex-col">
+                    <a href="#" class="flex items-center ps-2.5 mb-8">
+                        <i data-lucide="gem" class="w-8 h-8 text-white"></i>
+                        <span class="self-center text-xl font-semibold whitespace-nowrap ml-2">Commerce OS</span>
+                    </a>
+                    <ul id="nav-links" class="space-y-2 font-medium flex-grow">
+                        <!-- Desktop navigation links will be dynamically inserted here -->
+                    </ul>
+                    <div class="mt-auto">
+                         <button onclick="logout()" class="w-full flex items-center p-3 text-gray-300 rounded-lg hover:bg-gray-700 group transition-all">
+                            <i data-lucide="log-out" class="w-5 h-5 text-gray-400"></i>
+                            <span class="ms-3">Logout</span>
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <main id="main-content" class="sm:ml-64 bg-gray-50 min-h-screen">
+                 <div class="p-4 md:p-6 pb-24 sm:pb-6">
+                    <!-- Header -->
+                    <header class="flex justify-between items-center mb-8">
+                        <div class="flex items-center">
+                             <h1 id="page-title" class="text-2xl md:text-3xl font-bold text-gray-900 truncate">Dashboard</h1>
+                        </div>
+                        <div id="header-actions" class="flex items-center space-x-2 md:space-x-4">
+                            <!-- Header actions/buttons will be dynamically inserted here -->
+                        </div>
+                    </header>
+                    
+                    <!-- Dynamic Content -->
+                    <div id="content-area">
+                        <!-- Page content will be dynamically rendered here -->
+                    </div>
+                </div>
+            </main>
+            
+            <!-- Bottom Navigation (Mobile) -->
+            <nav id="bottom-nav" class="sm:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 shadow-lg z-30 h-16">
+                 <ul id="bottom-nav-links" class="flex justify-around items-center h-full">
+                    <!-- Mobile navigation links will be dynamically inserted here -->
+                 </ul>
+            </nav>
+        </div>
+        
+        <!-- Modals Container -->
+        <div id="modal-container"></div>
+        
+        <!-- Toast Notification Container -->
+        <div id="toast-container"></div>
+    </div>
+
+    <script>
+        // --- MOCK DATA ---
+        const mockDatabase = {
+            products: [
+                { id: 1, name: 'Smartwatch Pro X', category: 'Electronics', price: 24999.00, stock: 50, uom: 'piece', available: true, imageUrl: 'https://placehold.co/600x400/4F46E5/FFFFFF?text=Smartwatch', vendorId: 1, rating: 4.5, reviews: 120, quantityType: 'unit' },
+                { id: 2, name: 'Organic Coffee Beans', category: 'Groceries', price: 899.00, stock: 150, uom: 'kg', available: true, imageUrl: 'https://placehold.co/600x400/10B981/FFFFFF?text=Coffee', vendorId: 1, rating: 4.8, reviews: 250, quantityType: 'weight', minQuantity: 0.25, step: 0.25 },
+                { id: 3, name: 'Classic Denim Jacket', category: 'Apparel', price: 2499.00, stock: 80, uom: 'piece', available: true, imageUrl: 'https://placehold.co/600x400/3B82F6/FFFFFF?text=Jacket', vendorId: 2, rating: 4.2, reviews: 85, quantityType: 'unit' },
+                { id: 4, name: 'The Art of Code', category: 'Books', price: 750.00, stock: 120, uom: 'piece', available: false, imageUrl: 'https://placehold.co/600x400/F59E0B/FFFFFF?text=Book', vendorId: 2, rating: 4.9, reviews: 310, quantityType: 'unit' },
+                { id: 5, name: 'Wireless Headphones', category: 'Electronics', price: 4999.00, stock: 75, uom: 'piece', available: true, imageUrl: 'https://placehold.co/600x400/4F46E5/FFFFFF?text=Headphones', vendorId: 1, rating: 4.6, reviews: 180, quantityType: 'unit' },
+                { id: 6, name: 'Premium Olive Oil', category: 'Groceries', price: 1250.00, stock: 15, uom: 'litre', available: true, imageUrl: 'https://placehold.co/600x400/10B981/FFFFFF?text=Olive+Oil', vendorId: 2, rating: 4.7, reviews: 95, quantityType: 'unit' },
+                { id: 7, name: 'Fresh Almonds', category: 'Groceries', price: 1200.00, stock: 100, uom: 'kg', available: true, imageUrl: 'https://placehold.co/600x400/f59e0b/FFFFFF?text=Almonds', vendorId: 2, rating: 4.9, reviews: 150, quantityType: 'weight', minQuantity: 0.1, step: 0.1 },
+            ],
+            orders: [
+                { id: 101, customer: 'Buyer User', items: [{ productId: 1, quantity: 1, price: 24999.00 }], total: 24999.00, status: 'Shipped', date: '2025-08-15', estimatedDelivery: '2025-08-19', trackingHistory: [{status: 'Order Placed', date: '2025-08-15'}, {status: 'Processing', date: '2025-08-15'}, {status: 'Shipped', date: '2025-08-16'}] },
+                { id: 102, customer: 'Buyer User', items: [{ productId: 3, quantity: 2, price: 2499.00 }], total: 4998.00, status: 'Delivered', date: '2025-08-12', estimatedDelivery: '2025-08-16', trackingHistory: [{status: 'Order Placed', date: '2025-08-12'}, {status: 'Processing', date: '2025-08-12'}, {status: 'Shipped', date: '2025-08-13'}, {status: 'Out for Delivery', date: '2025-08-16'}, {status: 'Delivered', date: '2025-08-16'}] },
+                { id: 103, customer: 'Another Buyer', items: [{ productId: 2, quantity: 1, price: 899.00 }], total: 899.00, status: 'Processing', date: '2025-08-18', estimatedDelivery: '2025-08-22', trackingHistory: [{status: 'Order Placed', date: '2025-08-18'}, {status: 'Processing', date: '2025-08-18'}] },
+                { id: 260, customer: 'Buyer User', items: [{ productId: 1, quantity: 1, price: 24999.00 }], total: 26484938.00, status: 'Processing', date: '2025-08-18', estimatedDelivery: '2025-08-22', trackingHistory: [{status: 'Order Placed', date: '2025-08-18'}, {status: 'Processing', date: '2025-08-18'}] },
+            ],
+            cart: [],
+            userProfile: {
+                buyer: {
+                    name: "Alex Doe",
+                    addresses: [
+                        { id: 1, type: 'Home', line1: '42, Tech Park Avenue', city: 'Bangalore', state: 'Karnataka', zip: '560066', default: true },
+                        { id: 2, type: 'Work', line1: '101, Innovation Tower', city: 'Bangalore', state: 'Karnataka', zip: '560001', default: false }
+                    ],
+                    paymentMethods: [
+                        { id: 1, type: 'Credit Card', provider: 'Visa', last4: '1234', default: true },
+                        { id: 2, type: 'UPI', provider: 'GPay', idName: 'alex.doe@okbank', default: false }
+                    ]
+                }
+            },
+            suppliers: [
+                { id: 1, name: 'Global Electronics Inc.', category: 'Electronics', productIds: [1, 5] },
+                { id: 2, name: 'FarmFresh Organics', category: 'Groceries', productIds: [2, 7] },
+                { id: 3, name: 'Fashion Forward Co.', category: 'Apparel', productIds: [3] },
+                { id: 4, name: 'The Publisher House', category: 'Books', productIds: [4] },
+                { id: 5, name: 'Gourmet Foods Ltd.', category: 'Groceries', productIds: [6] },
+            ],
+            purchaseOrders: [
+                { id: 201, supplierId: 2, items: [{ productId: 2, quantity: 50 }], total: 44950, status: 'Received', orderDate: '2025-08-01', receivedDate: '2025-08-05' },
+                { id: 202, supplierId: 1, items: [{ productId: 1, quantity: 20 }], total: 499980, status: 'Shipped', orderDate: '2025-08-10', expectedDate: '2025-08-18' },
+                { id: 203, supplierId: 3, items: [{ productId: 3, quantity: 30 }], total: 74970, status: 'Ordered', orderDate: '2025-08-15', expectedDate: '2025-08-25' },
+            ]
+        };
+
+        // --- APPLICATION STATE ---
+        let state = { currentUser: null, currentPage: null, activeFilters: { category: 'All' } };
+        
+        // --- DOM ELEMENTS ---
+        const authScreen = document.getElementById('auth-screen');
+        const mainApp = document.getElementById('main-app');
+        const sidebar = document.getElementById('sidebar');
+        const navLinks = document.getElementById('nav-links');
+        const bottomNavLinks = document.getElementById('bottom-nav-links');
+        const pageTitle = document.getElementById('page-title');
+        const headerActions = document.getElementById('header-actions');
+        const contentArea = document.getElementById('content-area');
+        const modalContainer = document.getElementById('modal-container');
+        const toastContainer = document.getElementById('toast-container');
+        let salesChart = null;
+
+        // --- UI CONFIGURATION ---
+        const uiConfig = {
+            buyer: {
+                nav: [
+                    { id: 'products', label: 'Browse', icon: 'layout-grid', default: true },
+                    { id: 'cart', label: 'Cart', icon: 'shopping-cart' },
+                    { id: 'orders', label: 'Orders', icon: 'package' }
+                ],
+                pages: {
+                    products: { title: 'Browse Products', render: renderBuyerProducts },
+                    cart: { title: 'Your Shopping Cart', render: renderCart },
+                    orders: { title: 'Your Order History', render: renderBuyerOrders }
+                }
+            },
+            vendor: {
+                nav: [
+                    { id: 'dashboard', label: 'Dashboard', icon: 'home', default: true },
+                    { id: 'products', label: 'Products', icon: 'list' },
+                    { id: 'orders', label: 'Orders', icon: 'inbox' },
+                    { id: 'inventory', label: 'Inventory', icon: 'archive' },
+                    { id: 'purchaseOrders', label: 'POs', icon: 'truck' }
+                ],
+                pages: {
+                    dashboard: { title: 'Vendor Dashboard', render: renderVendorDashboard },
+                    products: { title: 'Product Catalog', render: renderVendorProducts },
+                    orders: { title: 'Order Management', render: renderVendorOrders },
+                    inventory: { title: 'Inventory Overview', render: renderVendorInventory },
+                    purchaseOrders: { title: 'Purchase Orders', render: renderVendorPurchaseOrders }
+                }
+            }
+        };
+
+        // --- CORE FUNCTIONS ---
+        function init() {
+            lucide.createIcons();
+        }
+
+        function login(role) {
+            state.currentUser = role;
+            authScreen.classList.add('hidden');
+            mainApp.classList.remove('hidden');
+            setupUIForRole(role);
+        }
+
+        function logout() {
+            state.currentUser = null;
+            state.currentPage = null;
+            mainApp.classList.add('hidden');
+            authScreen.classList.remove('hidden');
+            contentArea.innerHTML = '';
+            navLinks.innerHTML = '';
+            bottomNavLinks.innerHTML = '';
+            mockDatabase.cart = []; // Clear cart on logout
+        }
+
+        function setupUIForRole(role) {
+            const config = uiConfig[role];
+            
+            // 1. Setup Desktop Sidebar
+            navLinks.innerHTML = config.nav.map(link => `
+                <li>
+                    <a href="#" id="nav-${link.id}" onclick="navigate('${link.id}')" class="flex items-center p-3 text-gray-300 rounded-lg hover:bg-gray-700 group transition-all">
+                        <i data-lucide="${link.icon}" class="w-5 h-5 text-gray-400"></i>
+                        <span class="ms-3 flex-1 whitespace-nowrap">${link.label}</span>
+                    </a>
+                </li>`).join('');
+
+            // 2. Setup Mobile Bottom Bar
+            let mobileNavItems = [...config.nav];
+            if (role === 'buyer') {
+                mobileNavItems = [config.nav[0], config.nav[1], config.nav[2]];
+            } else if (role === 'vendor') {
+                mobileNavItems = [config.nav[0], config.nav[1], config.nav[2], config.nav[3], config.nav[4]];
+            }
+
+            bottomNavLinks.innerHTML = mobileNavItems.map((link) => {
+                const isCenterButton = (role === 'buyer' && link.id === 'cart') || (role === 'vendor' && link.id === 'orders');
+                if (isCenterButton) {
+                    return `
+                        <li class="relative">
+                            <a href="#" id="bottom-nav-${link.id}" onclick="navigate('${link.id}')" class="absolute bottom-2 -translate-x-1/2 left-1/2 flex items-center justify-center w-16 h-16 bg-indigo-600 text-white rounded-full shadow-lg transform transition-transform hover:scale-110">
+                                <i data-lucide="${link.icon}" class="w-8 h-8"></i>
+                                <span id="cart-bubble" class="absolute top-0 right-0 inline-flex items-center justify-center w-5 h-5 text-xs font-semibold text-indigo-800 bg-indigo-200 rounded-full ${role === 'buyer' ? '' : 'hidden'}">0</span>
+                            </a>
+                        </li>
+                    `;
+                }
+                return `
+                    <li>
+                        <a href="#" id="bottom-nav-${link.id}" onclick="navigate('${link.id}')" class="flex flex-col items-center justify-center text-gray-500 hover:text-indigo-600 transition-colors">
+                            <i data-lucide="${link.icon}" class="w-6 h-6"></i>
+                            <span class="text-xs mt-1">${link.label}</span>
+                        </a>
+                    </li>
+                `;
+            }).join('');
+            
+            const defaultPage = config.nav.find(link => link.default).id;
+            navigate(defaultPage);
+            if (role === 'buyer') updateCartBubble();
+            lucide.createIcons();
+        }
+
+        function navigate(pageId) {
+            state.currentPage = pageId;
+            const config = uiConfig[state.currentUser];
+            const page = config.pages[pageId];
+            pageTitle.textContent = page.title;
+            
+            // Update active state for both navs
+            document.querySelectorAll('#nav-links a').forEach(link => link.classList.remove('nav-link-active'));
+            document.getElementById(`nav-${pageId}`)?.classList.add('nav-link-active');
+            
+            document.querySelectorAll('#bottom-nav-links a').forEach(link => link.classList.remove('bottom-nav-link-active'));
+            const bottomLink = document.getElementById(`bottom-nav-${pageId}`);
+            if (bottomLink && !bottomLink.parentElement.classList.contains('relative')) {
+                bottomLink.classList.add('bottom-nav-link-active');
+            }
+
+            contentArea.innerHTML = renderSkeletonLoader();
+            setTimeout(() => {
+                page.render();
+                lucide.createIcons();
+            }, 300);
+        }
+
+        // --- RENDER FUNCTIONS (BUYER) ---
+        function renderBuyerProducts() {
+            const categories = ['All', ...new Set(mockDatabase.products.map(p => p.category))];
+            headerActions.innerHTML = `<div class="flex items-center space-x-2 flex-wrap gap-2 justify-end"><span class="text-sm font-medium text-gray-600 hidden sm:inline">Filter by:</span><div class="flex space-x-2 overflow-x-auto pb-2">${categories.map(cat => `<button onclick="filterProducts('${cat}')" class="px-4 py-1.5 text-sm rounded-full whitespace-nowrap ${state.activeFilters.category === cat ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'} transition-all">${cat}</button>`).join('')}</div></div>`;
+            let filteredProducts = mockDatabase.products.filter(p => p.available);
+            if (state.activeFilters.category !== 'All') {
+                filteredProducts = filteredProducts.filter(p => p.category === state.activeFilters.category);
+            }
+            contentArea.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">${filteredProducts.length > 0 ? filteredProducts.map(product => {
+                const cartItem = mockDatabase.cart.find(item => item.productId === product.id);
+                const quantityInCart = cartItem ? cartItem.quantity : 0;
+                let cartButtonHTML = '';
+                if (product.quantityType === 'unit') {
+                    cartButtonHTML = quantityInCart === 0 ? `<button onclick="addToCart(${product.id}, 1)" class="mt-4 w-full flex items-center justify-center bg-indigo-600 text-white py-2.5 rounded-lg hover:bg-indigo-700 transition-all font-semibold"><i data-lucide="plus" class="w-5 h-5 mr-2"></i> Add to Cart</button>` : `<div class="mt-4 flex items-center justify-between border border-gray-300 rounded-lg"><button onclick="updateCartQuantity(${product.id}, -1, true)" class="px-4 py-2 text-indigo-600 hover:bg-indigo-50 text-lg font-bold rounded-l-lg">-</button><span class="font-semibold text-gray-800">${quantityInCart} in cart</span><button onclick="updateCartQuantity(${product.id}, 1, true)" class="px-4 py-2 text-indigo-600 hover:bg-indigo-50 text-lg font-bold rounded-r-lg">+</button></div>`;
+                } else if (product.quantityType === 'weight') {
+                    cartButtonHTML = cartItem ? `<div class="mt-4 text-center"><p class="font-semibold text-green-600">${cartItem.quantity} ${product.uom} in cart</p><button onclick="openQuantityModal(${product.id})" class="text-sm text-indigo-600 hover:underline">Edit quantity</button></div>` : `<button onclick="openQuantityModal(${product.id})" class="mt-4 w-full flex items-center justify-center bg-indigo-600 text-white py-2.5 rounded-lg hover:bg-indigo-700 transition-all font-semibold"><i data-lucide="plus" class="w-5 h-5 mr-2"></i> Add Quantity</button>`;
+                }
+                return `<div class="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col transition-transform hover:-translate-y-1 hover:shadow-2xl"><img src="${product.imageUrl}" alt="${product.name}" class="w-full h-48 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/cccccc/FFFFFF?text=Image+Not+Found';"><div class="p-4 flex flex-col flex-grow"><p class="text-xs text-indigo-500 font-semibold">${product.category}</p><h3 class="text-lg font-bold text-gray-900 truncate">${product.name}</h3><div class="flex items-center mt-1 text-sm text-gray-500"><i data-lucide="star" class="w-4 h-4 text-yellow-500 fill-current"></i><span class="ml-1">${product.rating} (${product.reviews} reviews)</span></div><div class="mt-4 flex-grow"><span class="text-2xl font-extrabold text-gray-800">₹${product.price.toLocaleString('en-IN')}</span><span class="text-sm text-gray-500"> / ${product.uom}</span></div>${cartButtonHTML}</div></div>`;
+            }).join('') : '<p class="col-span-full text-center text-gray-500 py-10">No products found for this category.</p>'}</div>`;
+        }
+        
+        function renderCart() {
+            headerActions.innerHTML = '';
+            if (mockDatabase.cart.length === 0) {
+                contentArea.innerHTML = `<div class="text-center py-16"><i data-lucide="shopping-cart" class="w-24 h-24 mx-auto text-gray-300"></i><h3 class="mt-4 text-xl font-semibold">Your cart is empty</h3><p class="text-gray-500 mt-1">Add items from the browse page to get started.</p><button onclick="navigate('products')" class="mt-6 px-5 py-2.5 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-semibold">Start Shopping</button></div>`;
+                return;
+            }
+            const subtotal = mockDatabase.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const tax = subtotal * 0.05;
+            const total = subtotal + tax;
+            contentArea.innerHTML = `<div class="grid grid-cols-1 lg:grid-cols-3 gap-8"><div class="lg:col-span-2 bg-white rounded-xl shadow-lg p-4 sm:p-6"><h3 class="text-xl font-bold mb-4">Cart Items (${mockDatabase.cart.length})</h3><ul class="divide-y divide-gray-200">${mockDatabase.cart.map(item => {
+                const product = mockDatabase.products.find(p => p.id === item.productId);
+                const quantityControl = product.quantityType === 'unit' ? `<div class="flex items-center border rounded-md"><button onclick="updateCartQuantity(${item.productId}, -1)" class="px-3 py-1 text-gray-600 hover:bg-gray-100">-</button><span class="px-4 font-semibold">${item.quantity}</span><button onclick="updateCartQuantity(${item.productId}, 1)" class="px-3 py-1 text-gray-600 hover:bg-gray-100">+</button></div>` : `<div class="text-center"><p class="font-semibold">${item.quantity} ${product.uom}</p><button onclick="openQuantityModal(${product.id})" class="text-xs text-indigo-600 hover:underline">Edit</button></div>`;
+                return `<li class="flex flex-col sm:flex-row items-start sm:items-center justify-between py-4 gap-4"><div class="flex items-center w-full sm:w-auto"><img src="${item.imageUrl}" class="w-20 h-20 rounded-lg object-cover mr-4"><div><p class="font-semibold text-lg">${item.name}</p><p class="text-sm text-gray-500">₹${item.price.toLocaleString('en-IN')} / ${product.uom}</p></div></div><div class="flex items-center justify-between w-full sm:w-auto space-x-4">${quantityControl}<p class="font-bold w-24 text-right text-lg">₹${(item.price * item.quantity).toLocaleString('en-IN')}</p><button onclick="removeFromCart(${item.productId})" class="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-full"><i data-lucide="trash-2" class="w-5 h-5"></i></button></div></li>`}).join('')}</ul></div><div class="bg-white rounded-xl shadow-lg p-6 h-fit"><h3 class="text-xl font-bold mb-4">Order Summary</h3><div class="space-y-3 text-gray-600"><div class="flex justify-between"><p>Subtotal</p><p class="font-medium">₹${subtotal.toLocaleString('en-IN')}</p></div><div class="flex justify-between"><p>Taxes (5%)</p><p class="font-medium">₹${tax.toLocaleString('en-IN')}</p></div><div class="flex justify-between text-lg font-bold text-gray-800 pt-3 border-t"><p>Total</p><p>₹${total.toLocaleString('en-IN')}</p></div></div><button onclick="openCheckoutModal()" class="mt-6 w-full py-3 bg-green-500 text-white font-bold rounded-lg hover:bg-green-600 transition-all flex items-center justify-center"><i data-lucide="lock" class="w-5 h-5 mr-2"></i> Proceed to Checkout</button></div></div>`;
+        }
+
+        function renderBuyerOrders() {
+            headerActions.innerHTML = '';
+            const orders = mockDatabase.orders.filter(o => o.customer === 'Buyer User');
+            contentArea.innerHTML = `<div class="bg-white rounded-xl shadow-lg"><div class="overflow-x-auto"><table class="w-full text-sm text-left text-gray-500"><thead class="text-xs text-gray-700 uppercase bg-gray-50"><tr><th scope="col" class="px-6 py-3">Order ID</th><th scope="col" class="px-6 py-3 hidden md:table-cell">Date</th><th scope="col" class="px-6 py-3">Total</th><th scope="col" class="px-6 py-3">Status</th><th scope="col" class="px-6 py-3">Actions</th></tr></thead><tbody>${orders.map(order => `<tr class="bg-white border-b hover:bg-gray-50"><td class="px-6 py-4 font-medium text-gray-900">#${order.id}</td><td class="px-6 py-4 hidden md:table-cell">${order.date}</td><td class="px-6 py-4">₹${order.total.toLocaleString('en-IN')}</td><td class="px-6 py-4"><span class="px-2 py-1 text-xs font-medium rounded-full ${getStatusClass(order.status)}">${order.status}</span></td><td class="px-6 py-4 flex space-x-2"><button onclick="openTrackOrderModal(${order.id})" class="text-xs p-2 rounded-md bg-indigo-100 text-indigo-700 hover:bg-indigo-200 font-semibold flex items-center"><i data-lucide="truck" class="w-4 h-4 mr-1"></i>Track</button>${order.status === 'Processing' ? `<button class="text-xs p-2 rounded-md bg-red-100 text-red-700 hover:bg-red-200 font-semibold">Cancel</button>` : ''}</td></tr>`).join('')}</tbody></table></div></div>`;
+        }
+
+        // --- RENDER FUNCTIONS (VENDOR) ---
+        function renderVendorDashboard() {
+            headerActions.innerHTML = '';
+            const totalSales = mockDatabase.orders.reduce((sum, order) => sum + order.total, 0);
+            contentArea.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-3 gap-6"><div class="bg-white p-6 rounded-xl shadow-lg flex items-center"><div class="bg-green-100 p-3 rounded-full mr-4"><i data-lucide="dollar-sign" class="w-8 h-8 text-green-600"></i></div><div><p class="text-sm text-gray-500">Total Sales</p><p class="text-2xl lg:text-3xl font-bold">${formatLargeNumber(totalSales)}</p></div></div><div class="bg-white p-6 rounded-xl shadow-lg flex items-center"><div class="bg-blue-100 p-3 rounded-full mr-4"><i data-lucide="inbox" class="w-8 h-8 text-blue-600"></i></div><div><p class="text-sm text-gray-500">Total Orders</p><p class="text-2xl lg:text-3xl font-bold">${mockDatabase.orders.length}</p></div></div><div class="bg-white p-6 rounded-xl shadow-lg flex items-center"><div class="bg-yellow-100 p-3 rounded-full mr-4"><i data-lucide="package" class="w-8 h-8 text-yellow-600"></i></div><div><p class="text-sm text-gray-500">Products Listed</p><p class="text-2xl lg:text-3xl font-bold">${mockDatabase.products.length}</p></div></div></div><div class="grid grid-cols-1 lg:grid-cols-5 gap-6 mt-8"><div class="lg:col-span-3 bg-white p-6 rounded-xl shadow-lg"><h3 class="text-xl font-bold mb-4">Sales Analytics</h3><div class="h-64"><canvas id="salesChart"></canvas></div></div><div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg"><h3 class="text-xl font-bold mb-4">Recent Orders</h3><ul class="space-y-4">${mockDatabase.orders.slice(0, 5).map(order => `<li class="flex items-center justify-between gap-2"><div class="min-w-0"><p class="font-semibold text-gray-800 truncate">Order #${order.id}</p><p class="text-sm text-gray-500 truncate">${order.customer}</p></div><div class="text-right flex-shrink-0"><p class="font-bold">${formatLargeNumber(order.total)}</p><span class="text-xs font-medium rounded-full px-2 py-0.5 ${getStatusClass(order.status)}">${order.status}</span></div></li>`).join('')}</ul></div></div>`;
+            renderSalesChart();
+        }
+
+        function renderVendorProducts() {
+            headerActions.innerHTML = `<button onclick="openProductModal()" class="flex items-center bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 font-semibold shadow-md"><i data-lucide="plus" class="w-5 h-5 mr-2"></i>Add Product</button>`;
+            contentArea.innerHTML = `<div class="bg-white rounded-xl shadow-lg"><div class="overflow-x-auto"><table class="w-full text-sm text-left text-gray-500"><thead class="text-xs text-gray-700 uppercase bg-gray-50"><tr><th scope="col" class="px-6 py-3">Product</th><th scope="col" class="px-6 py-3 hidden sm:table-cell">Price</th><th scope="col" class="px-6 py-3 hidden md:table-cell">Stock</th><th scope="col" class="px-6 py-3">Available</th><th scope="col" class="px-6 py-3 text-right">Actions</th></tr></thead><tbody>${mockDatabase.products.map(product => `<tr class="bg-white border-b hover:bg-gray-50"><th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap flex items-center"><img src="${product.imageUrl}" class="w-12 h-12 rounded-lg object-cover mr-4" onerror="this.onerror=null;this.src='https://placehold.co/600x400/cccccc/FFFFFF?text=Img';"><span class="truncate w-24 sm:w-auto">${product.name}</span></th><td class="px-6 py-4 hidden sm:table-cell">₹${product.price.toLocaleString('en-IN')} / ${product.uom}</td><td class="px-6 py-4 hidden md:table-cell">${product.stock}</td><td class="px-6 py-4"><label class="toggle-switch"><input type="checkbox" ${product.available ? 'checked' : ''} onchange="toggleProductAvailability(${product.id})"><span class="slider"></span></label></td><td class="px-6 py-4 flex space-x-2 justify-end"><button onclick="editProduct(${product.id})" class="p-2 text-blue-600 hover:bg-blue-100 rounded-full"><i data-lucide="edit-2" class="w-5 h-5"></i></button><button onclick="deleteProduct(${product.id})" class="p-2 text-red-600 hover:bg-red-100 rounded-full"><i data-lucide="trash-2" class="w-5 h-5"></i></button></td></tr>`).join('')}</tbody></table></div></div>`;
+        }
+
+        function renderVendorOrders(isDashboard = false) {
+            const getActionButtons = (order) => {
+                if (order.status === 'Processing') return `<button onclick="updateOrderStatus(${order.id}, 'Shipped')" class="text-xs p-2 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 font-semibold whitespace-nowrap">Mark Shipped</button>`;
+                if (order.status === 'Shipped') return `<button onclick="updateOrderStatus(${order.id}, 'Delivered')" class="text-xs p-2 rounded-md bg-green-100 text-green-700 hover:bg-green-200 font-semibold whitespace-nowrap">Mark Delivered</button>`;
+                return `<span class="text-xs text-gray-500">No actions</span>`;
+            };
+            const ordersHtml = `<div class="${isDashboard ? '' : 'bg-white rounded-xl shadow-lg'}"><div class="overflow-x-auto"><table class="w-full text-sm text-left text-gray-500"><thead class="text-xs text-gray-700 uppercase bg-gray-50"><tr><th scope="col" class="px-6 py-3">Order</th><th scope="col" class="px-6 py-3 hidden sm:table-cell">Customer</th><th scope="col" class="px-6 py-3">Total</th><th scope="col" class="px-6 py-3">Status</th>${!isDashboard ? '<th scope="col" class="px-6 py-3">Actions</th>' : ''}</tr></thead><tbody>${mockDatabase.orders.slice(0, isDashboard ? 5 : mockDatabase.orders.length).map(order => `<tr class="bg-white border-b hover:bg-gray-50"><td class="px-6 py-4 font-medium text-gray-900">#${order.id}</td><td class="px-6 py-4 hidden sm:table-cell">${order.customer}</td><td class="px-6 py-4">₹${order.total.toLocaleString('en-IN')}</td><td class="px-6 py-4"><span class="px-2 py-1 text-xs font-medium rounded-full ${getStatusClass(order.status)}">${order.status}</span></td>${!isDashboard ? `<td class="px-6 py-4">${getActionButtons(order)}</td>` : ''}</tr>`).join('')}</tbody></table></div></div>`;
+            if (isDashboard) return ordersHtml;
+            headerActions.innerHTML = '';
+            contentArea.innerHTML = ordersHtml;
+        }
+
+        function renderVendorInventory() {
+            headerActions.innerHTML = '';
+            contentArea.innerHTML = `<div class="bg-white rounded-xl shadow-lg"><div class="overflow-x-auto"><table class="w-full text-sm text-left text-gray-500"><thead class="text-xs text-gray-700 uppercase bg-gray-50"><tr><th scope="col" class="px-6 py-3">Product</th><th scope="col" class="px-6 py-3">Stock</th><th scope="col" class="px-6 py-3">Status</th><th scope="col" class="px-6 py-3">Actions</th></tr></thead><tbody>${mockDatabase.products.map(product => {
+                const isLowStock = product.stock <= 20;
+                return `<tr class="bg-white border-b hover:bg-gray-50"><th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">${product.name}</th><td class="px-6 py-4">${product.stock} ${product.uom}(s)</td><td class="px-6 py-4"><span class="flex items-center text-sm font-medium ${product.stock > 20 ? 'text-green-700' : product.stock > 0 ? 'text-yellow-700' : 'text-red-700'}"><span class="flex w-2.5 h-2.5 ${product.stock > 20 ? 'bg-green-500' : product.stock > 0 ? 'bg-yellow-500' : 'bg-red-500'} rounded-full mr-1.5 flex-shrink-0"></span>${product.stock > 20 ? 'In Stock' : product.stock > 0 ? 'Low Stock' : 'Out of Stock'}</span></td><td class="px-6 py-4">${isLowStock ? `<button onclick="openPurchaseOrderModal(${product.id})" class="text-xs p-2 rounded-md bg-orange-100 text-orange-700 hover:bg-orange-200 font-semibold">Reorder Stock</button>` : ''}</td></tr>`}).join('')}</tbody></table></div></div>`;
+        }
+
+        // --- NEW VENDOR FUNCTIONS ---
+        function renderVendorPurchaseOrders() {
+            headerActions.innerHTML = `<button onclick="openPurchaseOrderModal()" class="flex items-center bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 font-semibold shadow-md"><i data-lucide="plus" class="w-5 h-5 mr-2"></i>New PO</button>`;
+            const getPOActionButtons = (po) => {
+                if (po.status === 'Ordered') return `<button onclick="updatePOStatus(${po.id}, 'Shipped')" class="text-xs p-2 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 font-semibold whitespace-nowrap">Mark Shipped</button>`;
+                if (po.status === 'Shipped') return `<button onclick="updatePOStatus(${po.id}, 'Received')" class="text-xs p-2 rounded-md bg-green-100 text-green-700 hover:bg-green-200 font-semibold whitespace-nowrap">Mark Received</button>`;
+                return `<span class="text-xs text-gray-500">No actions</span>`;
+            };
+            contentArea.innerHTML = `<div class="bg-white rounded-xl shadow-lg"><div class="overflow-x-auto"><table class="w-full text-sm text-left text-gray-500"><thead class="text-xs text-gray-700 uppercase bg-gray-50"><tr><th scope="col" class="px-6 py-3">PO ID</th><th scope="col" class="px-6 py-3">Supplier</th><th scope="col" class="px-6 py-3">Total</th><th scope="col" class="px-6 py-3">Status</th><th scope="col" class="px-6 py-3">Actions</th></tr></thead><tbody>${mockDatabase.purchaseOrders.map(po => {
+                const supplier = mockDatabase.suppliers.find(s => s.id === po.supplierId);
+                return `<tr class="bg-white border-b hover:bg-gray-50"><td class="px-6 py-4 font-medium">#${po.id}</td><td class="px-6 py-4">${supplier.name}</td><td class="px-6 py-4">₹${po.total.toLocaleString('en-IN')}</td><td class="px-6 py-4"><span class="px-2 py-1 text-xs font-medium rounded-full ${getStatusClass(po.status)}">${po.status}</span></td><td class="px-6 py-4">${getPOActionButtons(po)}</td></tr>`
+            }).join('')}</tbody></table></div></div>`;
+        }
+
+        function updatePOStatus(poId, newStatus) {
+            const po = mockDatabase.purchaseOrders.find(p => p.id === poId);
+            if (po) {
+                po.status = newStatus;
+                if (newStatus === 'Received') {
+                    po.receivedDate = new Date().toISOString().slice(0, 10);
+                    // Automatically update stock
+                    po.items.forEach(item => {
+                        const product = mockDatabase.products.find(p => p.id === item.productId);
+                        if (product) product.stock += item.quantity;
+                    });
+                    showToast(`Stock updated for items in PO #${po.id}.`, 'success');
+                }
+                renderVendorPurchaseOrders();
+                lucide.createIcons();
+                showToast(`PO #${poId} status updated to ${newStatus}.`, 'success');
+            }
+        }
+        
+        // --- EVENT HANDLERS & ACTIONS ---
+        function filterProducts(category) {
+            state.activeFilters.category = category;
+            renderBuyerProducts();
+            lucide.createIcons();
+        }
+
+        function addToCart(productId, quantity) {
+            const product = mockDatabase.products.find(p => p.id === productId);
+            if (!product) return;
+            const cartItem = mockDatabase.cart.find(item => item.productId === productId);
+            if (cartItem) {
+                 if (product.quantityType === 'unit') cartItem.quantity += quantity;
+                 else cartItem.quantity = quantity;
+            } else {
+                mockDatabase.cart.push({ productId: product.id, name: product.name, price: product.price, imageUrl: product.imageUrl, quantity: quantity });
+            }
+            showToast(`${product.name} added to cart!`, 'success');
+            updateCartBubble();
+            if (state.currentPage === 'products') renderBuyerProducts();
+            else if (state.currentPage === 'cart') renderCart();
+            lucide.createIcons();
+        }
+        
+        function removeFromCart(productId) {
+            mockDatabase.cart = mockDatabase.cart.filter(item => item.productId !== productId);
+            updateCartBubble();
+            renderCart();
+            lucide.createIcons();
+        }
+
+        function updateCartQuantity(productId, change, fromProductPage = false) {
+            const cartItem = mockDatabase.cart.find(item => item.productId === productId);
+            if (cartItem) {
+                cartItem.quantity += change;
+                if (cartItem.quantity <= 0) {
+                    mockDatabase.cart = mockDatabase.cart.filter(item => item.productId !== productId);
+                }
+            }
+            updateCartBubble();
+            if (fromProductPage) renderBuyerProducts();
+            else renderCart();
+            lucide.createIcons();
+        }
+        
+        function toggleProductAvailability(productId) {
+            const product = mockDatabase.products.find(p => p.id === productId);
+            if(product) {
+                product.available = !product.available;
+                showToast(`${product.name} is now ${product.available ? 'available' : 'unavailable'}.`, 'success');
+            }
+        }
+
+        function updateOrderStatus(orderId, newStatus) {
+            const order = mockDatabase.orders.find(o => o.id === orderId);
+            if (order) {
+                order.status = newStatus;
+                order.trackingHistory.push({ status: newStatus, date: new Date().toISOString().slice(0, 10) });
+                if (state.currentPage === 'dashboard') renderVendorDashboard();
+                else renderVendorOrders();
+                lucide.createIcons();
+                showToast(`Order #${orderId} status updated to ${newStatus}.`, 'success');
+            }
+        }
+
+        function editProduct(productId) {
+            const product = mockDatabase.products.find(p => p.id === productId);
+            if (product) openProductModal(product);
+        }
+        
+        function deleteProduct(productId) {
+            openConfirmationModal('Are you sure you want to delete this product?', () => {
+                mockDatabase.products = mockDatabase.products.filter(p => p.id !== productId);
+                navigate('products');
+                showToast('Product deleted successfully.', 'success');
+            });
+        }
+
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            const id = document.getElementById('product-id').value;
+            const quantityTypeToggle = document.getElementById('quantity-type-toggle');
+            const uomInput = document.getElementById('product-uom');
+            const productData = { name: document.getElementById('product-name').value, category: document.getElementById('product-category').value, price: parseFloat(document.getElementById('product-price').value), stock: parseInt(document.getElementById('product-stock').value), imageUrl: document.getElementById('product-image').value, available: true, quantityType: quantityTypeToggle.checked ? 'weight' : 'unit', uom: quantityTypeToggle.checked ? uomInput.value : 'piece' };
+            if (id) {
+                const index = mockDatabase.products.findIndex(p => p.id == id);
+                mockDatabase.products[index] = { ...mockDatabase.products[index], ...productData };
+                showToast('Product updated successfully!', 'success');
+            } else {
+                productData.id = Date.now();
+                productData.vendorId = 1;
+                productData.rating = (Math.random() * (5 - 4) + 4).toFixed(1);
+                productData.reviews = Math.floor(Math.random() * 100);
+                mockDatabase.products.push(productData);
+                showToast('Product added successfully!', 'success');
+            }
+            closeModal();
+            navigate('products');
+        }
+        
+        // --- MODAL & UTILITY FUNCTIONS ---
+        function closeModal() {
+            const modal = document.getElementById('app-modal');
+            if (modal) {
+                modal.classList.add('opacity-0');
+                setTimeout(() => modal.remove(), 300);
+            }
+        }
+
+        function openProductModal(product = null) {
+            const isWeight = product ? product.quantityType === 'weight' : false;
+            const modalHTML = `<div id="app-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 transition-opacity duration-300"><div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-6 m-4 max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-95 opacity-0" id="modal-content"><div class="flex justify-between items-center pb-3 border-b"><h3 class="text-2xl font-bold">${product ? 'Edit Product' : 'Add New Product'}</h3><button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 p-1 rounded-full"><i data-lucide="x" class="w-6 h-6"></i></button></div><form id="product-form" class="space-y-4 mt-4"><input type="hidden" id="product-id" value="${product ? product.id : ''}"><div><label for="product-name" class="block text-sm font-medium text-gray-700">Product Name</label><input type="text" id="product-name" value="${product ? product.name : ''}" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"></div><div><label for="product-category" class="block text-sm font-medium text-gray-700">Category</label><select id="product-category" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"><option>Electronics</option><option>Groceries</option><option>Apparel</option><option>Books</option></select></div><div class="p-3 bg-gray-50 rounded-md space-y-3"><div class="flex items-center justify-between"><label class="block text-sm font-medium text-gray-700">Unit Type</label><div class="flex items-center"><span class="text-sm font-medium text-gray-600">Piece</span><label class="toggle-switch mx-2"><input type="checkbox" id="quantity-type-toggle" onchange="toggleUomField()" ${isWeight ? 'checked' : ''}><span class="slider"></span></label><span class="text-sm font-medium text-gray-600">Weight</span></div></div><div id="uom-container" class="${isWeight ? '' : 'hidden'}"><label for="product-uom" class="block text-sm font-medium text-gray-700">Unit of Measure (UOM)</label><input type="text" id="product-uom" value="${product ? product.uom : 'kg'}" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g., kg, g, litre"></div></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-4"><div><label for="product-price" class="block text-sm font-medium text-gray-700">Price per Unit (₹)</label><input type="number" id="product-price" value="${product ? product.price : ''}" required min="0" step="0.01" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"></div><div><label for="product-stock" class="block text-sm font-medium text-gray-700">Stock Quantity</label><input type="number" id="product-stock" value="${product ? product.stock : ''}" required min="0" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"></div></div><div><label for="product-image" class="block text-sm font-medium text-gray-700">Image URL</label><input type="url" id="product-image" value="${product ? product.imageUrl : ''}" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="https://placehold.co/600x400"></div><div class="flex justify-end pt-4"><button type="button" onclick="closeModal()" class="px-4 py-2 mr-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 font-semibold">Cancel</button><button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-semibold">Save Product</button></div></form></div></div>`;
+            modalContainer.innerHTML = modalHTML;
+            if (product) document.getElementById('product-category').value = product.category;
+            document.getElementById('product-form').addEventListener('submit', handleFormSubmit);
+            lucide.createIcons();
+            setTimeout(() => {
+                document.getElementById('app-modal').classList.remove('opacity-0');
+                document.getElementById('modal-content').classList.remove('scale-95', 'opacity-0');
+            }, 10);
+        }
+
+        function toggleUomField() {
+            document.getElementById('uom-container').classList.toggle('hidden', !document.getElementById('quantity-type-toggle').checked);
+        }
+        
+        function openConfirmationModal(message, onConfirm) {
+            const modalHTML = `<div id="app-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 transition-opacity duration-300"><div class="bg-white rounded-lg shadow-xl w-full max-w-sm p-6 m-4 text-center transform transition-all duration-300 scale-95 opacity-0" id="modal-content"><i data-lucide="alert-triangle" class="w-16 h-16 mx-auto text-red-500"></i><h3 class="text-xl font-bold mt-4">Are you sure?</h3><p class="text-gray-600 mt-2">${message}</p><div class="flex justify-center mt-6 space-x-4"><button id="confirm-cancel" class="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 font-semibold">Cancel</button><button id="confirm-action" class="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 font-semibold">Confirm</button></div></div></div>`;
+            modalContainer.innerHTML = modalHTML;
+            lucide.createIcons();
+            document.getElementById('confirm-cancel').onclick = closeModal;
+            document.getElementById('confirm-action').onclick = () => { onConfirm(); closeModal(); };
+            setTimeout(() => {
+                document.getElementById('app-modal').classList.remove('opacity-0');
+                document.getElementById('modal-content').classList.remove('scale-95', 'opacity-0');
+            }, 10);
+        }
+
+        // --- Multi-Step Checkout Modal ---
+        let checkoutStep = 1;
+        function openCheckoutModal() {
+            checkoutStep = 1;
+            const modalHTML = `<div id="app-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 transition-opacity duration-300"><div class="bg-white rounded-lg shadow-xl w-full max-w-2xl m-4 max-h-[90vh] flex flex-col transform transition-all duration-300 scale-95 opacity-0" id="modal-content"><div class="flex justify-between items-center p-4 border-b"><h3 class="text-2xl font-bold">Checkout</h3><button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 p-1 rounded-full"><i data-lucide="x" class="w-6 h-6"></i></button></div><div id="checkout-content" class="p-6 overflow-y-auto"></div><div id="checkout-footer" class="p-4 mt-auto border-t flex justify-between items-center bg-gray-50 rounded-b-lg"></div></div></div>`;
+            modalContainer.innerHTML = modalHTML;
+            renderCheckoutStep();
+            lucide.createIcons();
+            setTimeout(() => {
+                document.getElementById('app-modal').classList.remove('opacity-0');
+                document.getElementById('modal-content').classList.remove('scale-95', 'opacity-0');
+            }, 10);
+        }
+
+        function renderCheckoutStep() {
+            const content = document.getElementById('checkout-content');
+            const footer = document.getElementById('checkout-footer');
+            const user = mockDatabase.userProfile.buyer;
+            if (checkoutStep === 1) {
+                content.innerHTML = `<h4 class="font-bold text-lg mb-4">Shipping Address</h4><div class="space-y-3">${user.addresses.map(addr => `<label class="block p-4 border rounded-lg cursor-pointer ${addr.default ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300'}"><input type="radio" name="address" class="hidden" ${addr.default ? 'checked' : ''}><p class="font-semibold">${addr.type} <span class="text-xs font-normal text-gray-500">${addr.line1}, ${addr.city}</span></p></label>`).join('')}</div>`;
+                footer.innerHTML = `<button class="invisible"></button><button onclick="navigateCheckout(2)" class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-semibold">Next: Payment</button>`;
+            } else if (checkoutStep === 2) {
+                 content.innerHTML = `<h4 class="font-bold text-lg mb-4">Payment Method</h4><div class="space-y-3">${user.paymentMethods.map(pm => `<label class="block p-4 border rounded-lg cursor-pointer ${pm.default ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300'}"><input type="radio" name="payment" class="hidden" ${pm.default ? 'checked' : ''}><p class="font-semibold">${pm.type} <span class="text-xs font-normal text-gray-500">${pm.provider} ending in ${pm.last4 || '...'}</span></p></label>`).join('')}</div>`;
+                footer.innerHTML = `<button onclick="navigateCheckout(1)" class="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 font-semibold">Back</button><button onclick="navigateCheckout(3)" class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-semibold">Next: Confirm</button>`;
+            } else if (checkoutStep === 3) {
+                const subtotal = mockDatabase.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                const tax = subtotal * 0.05;
+                const total = subtotal + tax;
+                content.innerHTML = `<h4 class="font-bold text-lg mb-4">Confirm Order</h4><div class="bg-gray-50 p-4 rounded-lg"><h5 class="font-semibold mb-2">Order Summary</h5>${mockDatabase.cart.map(item => `<div class="flex justify-between text-sm"><p>${item.name} x ${item.quantity}</p><p>₹${(item.price * item.quantity).toLocaleString('en-IN')}</p></div>`).join('')}<div class="flex justify-between font-bold mt-2 pt-2 border-t"><p>Total</p><p>₹${total.toLocaleString('en-IN')}</p></div></div>`;
+                footer.innerHTML = `<button onclick="navigateCheckout(2)" class="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 font-semibold">Back</button><button onclick="placeOrder()" class="px-6 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 font-bold">Place Order</button>`;
+            } else if (checkoutStep === 4) {
+                content.innerHTML = `<div class="text-center py-8"><i data-lucide="check-circle" class="w-20 h-20 text-green-500 mx-auto"></i><h3 class="text-2xl font-bold mt-4">Order Placed Successfully!</h3><p class="text-gray-600 mt-2">Your order ID is #${mockDatabase.orders[mockDatabase.orders.length - 1].id}. You can now track its progress.</p></div>`;
+                footer.innerHTML = `<button onclick="closeModal(); navigate('products');" class="w-full px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-semibold">Continue Shopping</button>`;
+                lucide.createIcons();
+            }
+        }
+        
+        function navigateCheckout(step) { checkoutStep = step; renderCheckoutStep(); }
+
+        function placeOrder() {
+            const subtotal = mockDatabase.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const tax = subtotal * 0.05;
+            const total = subtotal + tax;
+            const newOrder = { id: Math.floor(Math.random() * 900) + 100, customer: 'Buyer User', items: [...mockDatabase.cart], total: total, status: 'Processing', date: new Date().toISOString().slice(0, 10), estimatedDelivery: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10), trackingHistory: [{status: 'Order Placed', date: new Date().toISOString().slice(0, 10)}, {status: 'Processing', date: new Date().toISOString().slice(0, 10)}] };
+            mockDatabase.orders.push(newOrder);
+            mockDatabase.cart = [];
+            updateCartBubble();
+            navigateCheckout(4);
+        }
+
+        function updateCartBubble() {
+            const cartBubble = document.getElementById('cart-bubble');
+            if (cartBubble) {
+                const totalItems = mockDatabase.cart.length;
+                cartBubble.textContent = totalItems;
+                cartBubble.style.display = totalItems > 0 ? 'inline-flex' : 'none';
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}"></i> ${message}`;
+            toastContainer.appendChild(toast);
+            lucide.createIcons();
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function renderSkeletonLoader() {
+            return `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">${Array(8).fill('').map(() => `<div class="bg-white rounded-xl shadow-lg p-4 skeleton"><div class="h-40 bg-gray-300 rounded-lg"></div><div class="mt-4 h-4 w-1/2 bg-gray-300 rounded"></div><div class="mt-2 h-6 w-3/4 bg-gray-300 rounded"></div><div class="mt-4 h-10 w-full bg-gray-300 rounded-lg"></div></div>`).join('')}</div>`;
+        }
+        
+        function getStatusClass(status) {
+            const classes = { 'Delivered': 'bg-green-100 text-green-800', 'Received': 'bg-green-100 text-green-800', 'Shipped': 'bg-blue-100 text-blue-800', 'Out for Delivery': 'bg-cyan-100 text-cyan-800', 'Processing': 'bg-yellow-100 text-yellow-800', 'Ordered': 'bg-yellow-100 text-yellow-800', 'Cancelled': 'bg-red-100 text-red-800', 'Order Placed': 'bg-gray-100 text-gray-800' };
+            return classes[status] || 'bg-gray-100 text-gray-800';
+        }
+
+        function formatLargeNumber(num) {
+            if (num >= 10000000) { return '₹' + (num / 10000000).toFixed(2) + ' Cr'; }
+            if (num >= 100000) { return '₹' + (num / 100000).toFixed(2) + ' L'; }
+            return '₹' + num.toLocaleString('en-IN');
+        }
+
+        function renderSalesChart() {
+            const ctx = document.getElementById('salesChart');
+            if (!ctx) return;
+            const salesData = { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], datasets: [{ label: 'Sales (₹)', data: [12000, 19000, 15000, 25000, 22000, 30000], backgroundColor: 'rgba(79, 70, 229, 0.1)', borderColor: '#4F46E5', borderWidth: 2, pointBackgroundColor: '#4F46E5', pointRadius: 4, tension: 0.4 }] };
+            if (salesChart) salesChart.destroy();
+            salesChart = new Chart(ctx, { type: 'line', data: salesData, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } } });
+        }
+        
+        function openTrackOrderModal(orderId) {
+            const order = mockDatabase.orders.find(o => o.id === orderId);
+            if (!order) return;
+            const allStatuses = ['Order Placed', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered'];
+            const currentStatusIndex = allStatuses.indexOf(order.status);
+            const timelineHTML = allStatuses.map((status, index) => {
+                const historyEntry = order.trackingHistory.find(h => h.status === status);
+                let itemClass = 'pending';
+                if (index < currentStatusIndex || (order.status === 'Delivered' && index <= currentStatusIndex)) itemClass = 'completed';
+                if (index === currentStatusIndex && order.status !== 'Delivered') itemClass = 'active';
+                return `<li class="relative pl-6 pb-8 timeline-item ${itemClass}"><div class="timeline-marker"></div><p class="font-semibold">${status}</p><p class="text-sm text-gray-500">${historyEntry ? historyEntry.date : 'Pending'}</p></li>`;
+            }).join('');
+            const modalHTML = `<div id="app-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 transition-opacity duration-300"><div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 m-4 transform transition-all duration-300 scale-95 opacity-0" id="modal-content"><div class="flex justify-between items-center pb-3 border-b"><h3 class="text-2xl font-bold">Track Order #${order.id}</h3><button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 p-1 rounded-full"><i data-lucide="x" class="w-6 h-6"></i></button></div><div class="mt-4"><p class="mb-4">Estimated Delivery: <span class="font-semibold">${order.estimatedDelivery}</span></p><ul class="border-l-2 border-gray-200">${timelineHTML}</ul></div></div></div>`;
+            modalContainer.innerHTML = modalHTML;
+            lucide.createIcons();
+            setTimeout(() => {
+                document.getElementById('app-modal').classList.remove('opacity-0');
+                document.getElementById('modal-content').classList.remove('scale-95', 'opacity-0');
+            }, 10);
+        }
+
+        function openQuantityModal(productId) {
+            const product = mockDatabase.products.find(p => p.id === productId);
+            const cartItem = mockDatabase.cart.find(item => item.productId === productId);
+            const currentQuantity = cartItem ? cartItem.quantity : product.minQuantity;
+            const modalHTML = `<div id="app-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 transition-opacity duration-300"><div class="bg-white rounded-lg shadow-xl w-full max-w-sm p-6 m-4 transform transition-all duration-300 scale-95 opacity-0" id="modal-content"><h3 class="text-xl font-bold text-center">${product.name}</h3><p class="text-center text-gray-500 mb-4">Enter quantity in ${product.uom}</p><div class="flex items-center justify-center space-x-4 my-6"><button onclick="changeWeightQuantity(-${product.step})" class="p-2 bg-gray-200 rounded-full w-10 h-10 text-xl font-bold">-</button><input type="number" id="weight-quantity-input" value="${currentQuantity}" step="${product.step}" min="${product.minQuantity}" class="w-24 text-center font-bold text-2xl border-b-2 border-indigo-500 focus:outline-none"><button onclick="changeWeightQuantity(${product.step})" class="p-2 bg-gray-200 rounded-full w-10 h-10 text-xl font-bold">+</button></div><div class="flex flex-col space-y-2"><button onclick="submitWeightQuantity(${productId})" class="w-full py-2.5 bg-indigo-600 text-white font-semibold rounded-lg">Add to Cart</button><button onclick="closeModal()" class="w-full py-2 text-gray-600 font-semibold">Cancel</button></div></div></div>`;
+            modalContainer.innerHTML = modalHTML;
+            setTimeout(() => {
+                document.getElementById('app-modal').classList.remove('opacity-0');
+                document.getElementById('modal-content').classList.remove('scale-95', 'opacity-0');
+            }, 10);
+        }
+
+        function changeWeightQuantity(amount) {
+            const input = document.getElementById('weight-quantity-input');
+            let currentValue = parseFloat(input.value);
+            let newValue = Math.max(parseFloat(input.min), currentValue + amount);
+            input.value = newValue.toFixed(2);
+        }
+
+        function submitWeightQuantity(productId) {
+            const input = document.getElementById('weight-quantity-input');
+            const quantity = parseFloat(input.value);
+            if (quantity > 0) {
+                addToCart(productId, quantity);
+            }
+            closeModal();
+        }
+        
+        // --- NEW: Purchase Order Modal ---
+        let poItems = [];
+        function openPurchaseOrderModal(productId = null) {
+            poItems = [];
+            if (productId) {
+                const product = mockDatabase.products.find(p => p.id === productId);
+                if(product) poItems.push({ ...product, quantity: 50 }); // Default reorder quantity
+            }
+
+            const modalHTML = `<div id="app-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 transition-opacity duration-300"><div class="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6 m-4 max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-95 opacity-0" id="modal-content"><div class="flex justify-between items-center pb-3 border-b"><h3 class="text-2xl font-bold">Create Purchase Order</h3><button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 p-1 rounded-full"><i data-lucide="x" class="w-6 h-6"></i></button></div><form id="po-form" class="space-y-4 mt-4"><div><label for="po-supplier" class="block text-sm font-medium text-gray-700">Supplier</label><select id="po-supplier" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">${mockDatabase.suppliers.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}</select></div><div id="po-items-container" class="space-y-2"></div><button type="button" onclick="addPOItem()" class="text-sm text-indigo-600 font-semibold flex items-center"><i data-lucide="plus" class="w-4 h-4 mr-1"></i>Add another product</button><div class="flex justify-end pt-4 space-x-2"><button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 font-semibold">Cancel</button><button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-semibold">Place Order</button></div></form></div></div>`;
+            modalContainer.innerHTML = modalHTML;
+            
+            window.renderPOItems = () => {
+                const container = document.getElementById('po-items-container');
+                container.innerHTML = poItems.map((item, index) => {
+                    if (item.productId === null) { // Render a dropdown for new items
+                        const availableProducts = mockDatabase.products.filter(p => !poItems.some(pi => pi.productId === p.id));
+                        return `<div class="flex items-end space-x-2" data-index="${index}"><div class="flex-grow"><label class="text-sm font-medium text-gray-700">Product</label><select onchange="updatePOItem(${index}, this.value)" class="mt-1 block w-full px-2 py-1 border border-gray-300 rounded-md"><option value="">Select a product...</option>${availableProducts.map(p => `<option value="${p.id}">${p.name}</option>`).join('')}</select></div><div class="w-24"></div><button type="button" onclick="removePOItem(${index})" class="p-2 text-red-500 hover:bg-red-100 rounded-md"><i data-lucide="trash-2" class="w-5 h-5"></i></button></div>`;
+                    }
+                    const quantityLabel = item.quantityType === 'weight' ? `Quantity (${item.uom})` : 'Quantity';
+                    return `<div class="flex items-end space-x-2" data-index="${index}"><div class="flex-grow"><label class="text-sm font-medium text-gray-700">Product</label><p class="font-semibold p-2">${item.name}</p></div><div class="w-24"><label class="text-sm font-medium text-gray-700">${quantityLabel}</label><input type="number" value="${item.quantity}" onchange="updatePOItemQuantity(${index}, this.value)" class="mt-1 block w-full px-2 py-1 border border-gray-300 rounded-md" required></div><button type="button" onclick="removePOItem(${index})" class="p-2 text-red-500 hover:bg-red-100 rounded-md"><i data-lucide="trash-2" class="w-5 h-5"></i></button></div>`;
+                }).join('');
+                lucide.createIcons();
+            };
+
+            window.addPOItem = () => { poItems.push({ productId: null }); renderPOItems(); };
+            window.removePOItem = (index) => { poItems.splice(index, 1); renderPOItems(); };
+            window.updatePOItem = (index, productId) => {
+                const product = mockDatabase.products.find(p => p.id == productId);
+                if (product) {
+                    poItems[index] = { ...product, quantity: 1 };
+                    renderPOItems();
+                }
+            };
+            window.updatePOItemQuantity = (index, quantity) => {
+                poItems[index].quantity = parseFloat(quantity);
+            };
+
+            document.getElementById('po-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const finalItems = poItems.filter(item => item.productId !== null);
+                if (finalItems.length === 0) {
+                    showToast('Please add at least one product to the order.', 'error');
+                    return;
+                }
+                const newPO = { id: Date.now(), supplierId: parseInt(document.getElementById('po-supplier').value), items: finalItems.map(i => ({productId: i.id, quantity: i.quantity})), total: 10000, status: 'Ordered', orderDate: new Date().toISOString().slice(0,10), expectedDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0,10) };
+                mockDatabase.purchaseOrders.push(newPO);
+                closeModal();
+                navigate('purchaseOrders');
+                showToast('Purchase Order placed successfully!', 'success');
+            });
+
+            renderPOItems();
+            lucide.createIcons();
+            setTimeout(() => {
+                document.getElementById('app-modal').classList.remove('opacity-0');
+                document.getElementById('modal-content').classList.remove('scale-95', 'opacity-0');
+            }, 10);
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
 

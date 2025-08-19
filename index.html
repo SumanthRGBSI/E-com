@@ -52,6 +52,8 @@
             position: fixed;
             bottom: 80px; /* Adjusted for bottom nav */
             right: 20px;
+            left: 20px;
+            sm:left: auto;
             padding: 1rem 1.5rem;
             border-radius: 0.75rem;
             color: white;
@@ -128,7 +130,7 @@
         <!-- Main Application Interface (Hidden by default) -->
         <div id="main-app" class="hidden">
             <!-- Sidebar Navigation (Desktop) -->
-            <aside id="sidebar" class="fixed top-0 left-0 z-40 w-64 h-screen transition-transform -translate-x-full sm:translate-x-0">
+            <aside id="sidebar" class="hidden sm:block fixed top-0 left-0 z-40 w-64 h-screen">
                 <div class="h-full px-4 py-6 overflow-y-auto bg-gray-800 text-white flex flex-col">
                     <a href="#" class="flex items-center ps-2.5 mb-8">
                         <i data-lucide="gem" class="w-8 h-8 text-white"></i>
@@ -147,24 +149,22 @@
             </aside>
 
             <!-- Main Content Area -->
-            <main id="main-content" class="sm:ml-64 bg-gray-50 min-h-screen">
-                 <div class="p-4 md:p-6 pb-24 sm:pb-6">
-                    <!-- Header -->
-                    <header class="flex justify-between items-center mb-8">
-                        <div class="flex items-center">
-                             <h1 id="page-title" class="text-2xl md:text-3xl font-bold text-gray-900 truncate">Dashboard</h1>
-                        </div>
-                        <div id="header-actions" class="flex items-center space-x-2 md:space-x-4">
-                            <!-- Header actions/buttons will be dynamically inserted here -->
-                        </div>
-                    </header>
-                    
-                    <!-- Dynamic Content -->
-                    <div id="content-area">
-                        <!-- Page content will be dynamically rendered here -->
+            <div id="main-content-wrapper" class="sm:ml-64 bg-gray-50 h-screen flex flex-col">
+                <!-- Header -->
+                <header id="main-header" class="flex justify-between items-center p-4 md:p-6 bg-white sm:bg-gray-50 w-full z-20 border-b border-gray-200 fixed sm:static top-0">
+                    <div class="flex items-center">
+                         <h1 id="page-title" class="text-xl md:text-3xl font-bold text-gray-900 truncate">Dashboard</h1>
                     </div>
+                    <div id="header-actions" class="flex items-center space-x-2 md:space-x-4">
+                        <!-- Header actions/buttons will be dynamically inserted here -->
+                    </div>
+                </header>
+                
+                <!-- Dynamic Content -->
+                <div id="content-area" class="flex-grow p-4 md:p-6 overflow-y-auto pt-20 sm:pt-4 pb-24 sm:pb-6">
+                    <!-- Page content will be dynamically rendered here -->
                 </div>
-            </main>
+            </div>
             
             <!-- Bottom Navigation (Mobile) -->
             <nav id="bottom-nav" class="sm:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 shadow-lg z-30 h-16">
@@ -377,16 +377,16 @@
             if (state.activeFilters.category !== 'All') {
                 filteredProducts = filteredProducts.filter(p => p.category === state.activeFilters.category);
             }
-            contentArea.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">${filteredProducts.length > 0 ? filteredProducts.map(product => {
+            contentArea.innerHTML = `<div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">${filteredProducts.length > 0 ? filteredProducts.map(product => {
                 const cartItem = mockDatabase.cart.find(item => item.productId === product.id);
                 const quantityInCart = cartItem ? cartItem.quantity : 0;
                 let cartButtonHTML = '';
                 if (product.quantityType === 'unit') {
-                    cartButtonHTML = quantityInCart === 0 ? `<button onclick="addToCart(${product.id}, 1)" class="mt-4 w-full flex items-center justify-center bg-indigo-600 text-white py-2.5 rounded-lg hover:bg-indigo-700 transition-all font-semibold"><i data-lucide="plus" class="w-5 h-5 mr-2"></i> Add to Cart</button>` : `<div class="mt-4 flex items-center justify-between border border-gray-300 rounded-lg"><button onclick="updateCartQuantity(${product.id}, -1, true)" class="px-4 py-2 text-indigo-600 hover:bg-indigo-50 text-lg font-bold rounded-l-lg">-</button><span class="font-semibold text-gray-800">${quantityInCart} in cart</span><button onclick="updateCartQuantity(${product.id}, 1, true)" class="px-4 py-2 text-indigo-600 hover:bg-indigo-50 text-lg font-bold rounded-r-lg">+</button></div>`;
+                    cartButtonHTML = quantityInCart === 0 ? `<button onclick="addToCart(${product.id}, 1)" class="mt-2 w-full flex items-center justify-center bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition-all font-semibold text-sm"><i data-lucide="plus" class="w-4 h-4 mr-1"></i> Add</button>` : `<div class="mt-2 flex items-center justify-between border border-gray-300 rounded-lg"><button onclick="updateCartQuantity(${product.id}, -1, true)" class="px-3 py-1 text-indigo-600 hover:bg-indigo-50 text-base font-bold rounded-l-lg">-</button><span class="font-semibold text-gray-800 text-sm">${quantityInCart}</span><button onclick="updateCartQuantity(${product.id}, 1, true)" class="px-3 py-1 text-indigo-600 hover:bg-indigo-50 text-base font-bold rounded-r-lg">+</button></div>`;
                 } else if (product.quantityType === 'weight') {
-                    cartButtonHTML = cartItem ? `<div class="mt-4 text-center"><p class="font-semibold text-green-600">${cartItem.quantity} ${product.uom} in cart</p><button onclick="openQuantityModal(${product.id})" class="text-sm text-indigo-600 hover:underline">Edit quantity</button></div>` : `<button onclick="openQuantityModal(${product.id})" class="mt-4 w-full flex items-center justify-center bg-indigo-600 text-white py-2.5 rounded-lg hover:bg-indigo-700 transition-all font-semibold"><i data-lucide="plus" class="w-5 h-5 mr-2"></i> Add Quantity</button>`;
+                    cartButtonHTML = cartItem ? `<div class="mt-2 text-center"><p class="font-semibold text-green-600 text-sm">${cartItem.quantity} ${product.uom} in cart</p><button onclick="openQuantityModal(${product.id})" class="text-xs text-indigo-600 hover:underline">Edit</button></div>` : `<button onclick="openQuantityModal(${product.id})" class="mt-2 w-full flex items-center justify-center bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition-all font-semibold text-sm"><i data-lucide="plus" class="w-4 h-4 mr-1"></i> Add</button>`;
                 }
-                return `<div class="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col transition-transform hover:-translate-y-1 hover:shadow-2xl"><img src="${product.imageUrl}" alt="${product.name}" class="w-full h-48 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/cccccc/FFFFFF?text=Image+Not+Found';"><div class="p-4 flex flex-col flex-grow"><p class="text-xs text-indigo-500 font-semibold">${product.category}</p><h3 class="text-lg font-bold text-gray-900 truncate">${product.name}</h3><div class="flex items-center mt-1 text-sm text-gray-500"><i data-lucide="star" class="w-4 h-4 text-yellow-500 fill-current"></i><span class="ml-1">${product.rating} (${product.reviews} reviews)</span></div><div class="mt-4 flex-grow"><span class="text-2xl font-extrabold text-gray-800">₹${product.price.toLocaleString('en-IN')}</span><span class="text-sm text-gray-500"> / ${product.uom}</span></div>${cartButtonHTML}</div></div>`;
+                return `<div class="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col transition-transform hover:-translate-y-1 hover:shadow-2xl"><img src="${product.imageUrl}" alt="${product.name}" class="w-full h-32 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/cccccc/FFFFFF?text=Image+Not+Found';"><div class="p-3 flex flex-col flex-grow"><p class="text-xs text-indigo-500 font-semibold">${product.category}</p><h3 class="text-sm font-bold text-gray-900 truncate">${product.name}</h3><div class="mt-2 flex-grow"><span class="text-lg font-extrabold text-gray-800">₹${product.price.toLocaleString('en-IN')}</span><span class="text-xs text-gray-500"> / ${product.uom}</span></div>${cartButtonHTML}</div></div>`;
             }).join('') : '<p class="col-span-full text-center text-gray-500 py-10">No products found for this category.</p>'}</div>`;
         }
         
@@ -690,7 +690,7 @@
         }
 
         function renderSkeletonLoader() {
-            return `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">${Array(8).fill('').map(() => `<div class="bg-white rounded-xl shadow-lg p-4 skeleton"><div class="h-40 bg-gray-300 rounded-lg"></div><div class="mt-4 h-4 w-1/2 bg-gray-300 rounded"></div><div class="mt-2 h-6 w-3/4 bg-gray-300 rounded"></div><div class="mt-4 h-10 w-full bg-gray-300 rounded-lg"></div></div>`).join('')}</div>`;
+            return `<div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">${Array(8).fill('').map(() => `<div class="bg-white rounded-xl shadow-lg p-4 skeleton"><div class="h-32 bg-gray-300 rounded-lg"></div><div class="mt-4 h-4 w-1/2 bg-gray-300 rounded"></div><div class="mt-2 h-6 w-3/4 bg-gray-300 rounded"></div><div class="mt-4 h-10 w-full bg-gray-300 rounded-lg"></div></div>`).join('')}</div>`;
         }
         
         function getStatusClass(status) {
